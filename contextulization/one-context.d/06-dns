@@ -1,0 +1,18 @@
+#!/bin/sh
+#need to find a way to echo all ETH*_DNS interfaces and remove duplicates
+nameservers=$(
+for var in $(echo ETH0_DNS); do
+            value=$(eval "echo \"\$$var\"")
+        if [ -n "$value" ]; then
+            echo "$value"
+        fi
+    done
+)
+[ -z "$nameservers" ] && exit 0
+
+echo -n '' > /etc/resolv.conf
+
+for nameserver in $nameservers; do
+    echo nameserver $nameserver >> /etc/resolv.conf
+done
+

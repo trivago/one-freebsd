@@ -1,0 +1,34 @@
+#!/bin/sh
+
+gen_config() {
+echo "==> Configuring Network Interfaces"
+for i in $(ifconfig -l ether)
+  do
+    case $i in
+      'lo0' | 'plip0' | 'pflog0')
+        ;;
+      vtnet0)
+        sysrc -q ifconfig_vtnet0="inet $ETH0_IP netmask $ETH0_MASK" > /dev/null
+        ;;
+      vtnet1)
+        sysrc -q ifconfig_vtnet1="inet $ETH1_IP netmask $ETH1_MASK" > /dev/null
+        ;;
+      vtnet2)
+        sysrc -q ifconfig_vtnet2="inet $ETH2_IP netmask $ETH2_MASK" > /dev/null
+        ;;
+      *)
+        echo "Unknown Interface Type"
+        ;;
+    esac
+  done
+  sysrc -q defaultrouter="$ETH0_GATEWAY" > /dev/null
+}
+
+networking_restart() {
+  echo "==> Restarting Networking"
+  /etc/rc.d/netif restart && /etc/rc.d/routing restart
+}
+
+gen_config
+networking_restart
+

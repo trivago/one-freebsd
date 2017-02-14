@@ -1,0 +1,10 @@
+#!/bin/sh
+#this scrip will create /appdata where we will store dot files
+if [ -f "/appdata" ]; then
+    echo "/appdata Already Exists, Skipping"
+else
+    mkdir -p /appdata
+fi
+
+
+

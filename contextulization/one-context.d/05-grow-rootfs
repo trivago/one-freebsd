@@ -1,0 +1,17 @@
+#!/bin/sh
+expanded="/appdata/.expanded"
+expand_root() {
+    if [ -f "$expanded" ]
+then
+        echo "==> root partition alread expanded"
+else
+        echo "==> expanding root partition"
+        camcontrol rescan all
+        gpart recover vtbd0
+        gpart resize -i 2 /dev/vtbd0
+        zpool online -e zroot vtbd0p2
+        touch "$expanded"
+fi
+}
+
+expand_root

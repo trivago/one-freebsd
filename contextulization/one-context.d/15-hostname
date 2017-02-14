@@ -1,0 +1,9 @@
+#!/bin/sh
+set_hostname() {
+    sysrc -q hostname="$SET_HOSTNAME" > /dev/null
+    hostname $SET_HOSTNAME
+}
+
+if [ -n "$SET_HOSTNAME" ]; then
+   set_hostname
+fi

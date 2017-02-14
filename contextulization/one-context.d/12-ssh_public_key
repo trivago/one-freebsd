@@ -1,0 +1,23 @@
+#!/bin/sh
+[ -z "${SSH_PUBLIC_KEY}${SSH_USER_KEY}" ] && exit 0
+
+config_ssh() {
+    echo "==> Enable root login via ssh, and disable DNS"
+    sed -i.bak -e 's/#PermitRootLogin\ no/PermitRootLogin\ yes/g' /etc/ssh/sshd_config
+    sed -i.bak -e 's/#UseDNS\ yes/UseDNS\ no/g' /etc/ssh/sshd_config
+}
+
+mkdir -m0700 -p /root/.ssh
+
+if [ -n "$SSH_PUBLIC_KEY" ]; then
+    echo "==> Adding SSH Public Keys"
+    echo "$SSH_PUBLIC_KEY" >> /root/.ssh/authorized_keys
+fi
+
+if [ -n "$SSH_USER_KEY" ]; then
+    echo "==> Adding SSH User Key"
+    echo "$SSH_USER_KEY" >> /root/.ssh/authorized_keys
+fi
+config_ssh
+chmod 600 /root/.ssh/authorized_keys
+

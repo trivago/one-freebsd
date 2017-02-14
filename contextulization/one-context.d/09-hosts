@@ -1,0 +1,8 @@
+#!/bin/sh
+gen_host() {
+    echo "==> Adding host to /etc/hosts"
+    echo "127.0.0.1 localhost" > /etc/hosts
+    echo "$ETH0_IP $SET_HOSTNAME" >> /etc/hosts
+}
+
+gen_host
