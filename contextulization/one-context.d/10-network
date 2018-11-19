@@ -1,27 +1,42 @@
 #!/bin/sh
+#will configure up to 3 network interfaces along with one default gateway for virtual nic or passthrough nic
+get_first_nonempty() {
+	for x in "$@"; do
+        echo "$x"
+		return 0
+	done
+}
 
 gen_config() {
-echo "==> Configuring Network Interfaces"
-for i in $(ifconfig -l ether)
-  do
-    case $i in
-      'lo0' | 'plip0' | 'pflog0')
-        ;;
-      vtnet0)
-        sysrc -q ifconfig_vtnet0="inet $ETH0_IP netmask $ETH0_MASK" > /dev/null
-        ;;
-      vtnet1)
-        sysrc -q ifconfig_vtnet1="inet $ETH1_IP netmask $ETH1_MASK" > /dev/null
-        ;;
-      vtnet2)
-        sysrc -q ifconfig_vtnet2="inet $ETH2_IP netmask $ETH2_MASK" > /dev/null
-        ;;
-      *)
-        echo "Unknown Interface Type"
-        ;;
-    esac
-  done
-  sysrc -q defaultrouter="$ETH0_GATEWAY" > /dev/null
+  for i in $(ifconfig -l ether)
+    do
+      case $i in
+        'lo0' | 'plip0' | 'pflog0')
+          ;;
+        ixv0)
+          [ -n "$PCI0_IP" ] && sysrc -q ifconfig_ixv0="inet $PCI0_IP netmask $PCI0_MASK" > /dev/null
+          [ -n "$PCI0_IP6" ] && sysrc -q ifconfig_ixv0="inet6 accept_rtadv $PCI0_IP6 prefixlen $PCI0_MASK6" > /dev/null
+          [ -n "$PCI0_MAC" ] && sysrc -q ifconfig_ixv0_alias0="ether $PCI0_MAC" > /dev/null
+          ;;
+        vtnet0)
+          [ -n "$ETH0_IP" ] && sysrc -q ifconfig_vtnet0="inet $ETH0_IP netmask $ETH0_MASK" > /dev/null
+          [ -n "$ETH0_IP6" ] && sysrc -q ifconfig_vtnet0_ipv6="inet6 accept_rtadv $ETH0_IP6 prefixlen 64" > /dev/null
+          ;;
+        vtnet1)
+          [ -n "$ETH1_IP" ] && sysrc -q ifconfig_vtnet1="inet $ETH1_IP netmask $ETH1_MASK" > /dev/null
+          [ -n "$ETH1_IP6" ] && sysrc -q ifconfig_vtnet1_ipv6="inet6 accept_rtadv $ETH1_IP6 prefixlen 64" > /dev/null
+          ;;
+        vtnet2)
+          [ -n "$ETH2_IP" ] && sysrc -q ifconfig_vtnet2="inet $ETH2_IP netmask $ETH2_MASK" > /dev/null
+          [ -n "$ETH2_IP6" ] && sysrc -q ifconfig_vtnet2_ipv6="inet6 accept_rtadv $ETH2_IP6 prefixlen 64" > /dev/null
+          ;;
+        *)
+          echo "Unknown Interface Type"
+          ;;
+      esac
+    done
+    [ -n "$ETH0_GATEWAY" ] && sysrc -q defaultrouter="$ETH0_GATEWAY" > /dev/null
+    [ -n "$PCI0_GATEWAY" ] && sysrc -q defaultrouter="$PCI0_GATEWAY" > /dev/null
 }
 
 networking_restart() {
